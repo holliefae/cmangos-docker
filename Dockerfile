@@ -227,7 +227,7 @@ VOLUME ["${VOLUME_DIR}"]
 
 # db-import
 
-FROM builder as db-import
+FROM builder AS db-import
 
 WORKDIR "${DATABASE_DIR}"
 

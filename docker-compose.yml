@@ -24,13 +24,15 @@ services:
       context: .
       target: client-data
       dockerfile: ./Dockerfile
+      args:
+        EXPANSION: "${WOW_VERSION}"
 
     environment:
       AUTO_CONFIRM: "true"
 
     volumes:
       - cmangos_mangosd_data:/home/mangos/data
-      - ${WOW_CLIENT_PATH}:/home/mangos/wow-client:ro
+      - ${WOW_CLIENT_DIR}:/home/mangos/wow-client:ro
 
     restart: "no"
 
@@ -39,12 +41,16 @@ services:
       context: .
       target: db-import
       dockerfile: ./Dockerfile
-  
+      args:
+        EXPANSION: "${WOW_VERSION}"
+
     environment:
       AUTO_CONFIRM: "true"
       MANGOS_DBHOST: mariadb
       MYSQL_SUPERUSER: root
-      MYSQL_SUPERPASS: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_SUPERPASS: "${MYSQL_SUPERPASS}"
+      MANGOS_DBUSER: "${MANGOS_DBUSER}"
+      MANGOS_DBPASS: "${MANGOS_DBPASS}"
 
     depends_on:
       mariadb:
@@ -53,13 +59,12 @@ services:
     volumes:
       - cmangos_mangosd_data:/home/mangos/data
 
-    restart: "no
+    restart: "no"
 
   mangosd:
-    image: "ghcr.io/byloth/cmangos/${WOW_VERSION}:latest"
     depends_on:
       mariadb:
-        condtion: service_healthy
+        condition: service_healthy
       client-data:
         condition: service_completed_successfully
       db-import:
@@ -69,6 +74,8 @@ services:
       context: .
       target: runner
       dockerfile: ./Dockerfile
+      args:
+        EXPANSION: "${WOW_VERSION}"
 
     environment:
       MANGOS_DBHOST: mariadb
@@ -90,10 +97,9 @@ services:
       - ./runner/config:/opt/mangos/conf:ro
 
   realmd:
-    image: "ghcr.io/byloth/cmangos/${WOW_VERSION}:latest"
     depends_on:
       mariadb:
-        condtion: service_healthy
+        condition: service_healthy
       client-data:
         condition: service_completed_successfully
       db-import:
@@ -103,6 +109,8 @@ services:
       context: .
       target: runner
       dockerfile: ./Dockerfile
+      args:
+        EXPANSION: "${WOW_VERSION}"
 
     environment:
       MANGOS_DBHOST: mariadb
