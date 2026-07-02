@@ -12,10 +12,63 @@ services:
       - mariadb_data:/var/lib/mysql
       - ./database:/etc/mysql/conf.d:ro
 
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  client-data:
+    build:
+      context: .
+      target: client-data
+      dockerfile: ./Dockerfile
+
+    environment:
+      AUTO_CONFIRM: "true"
+
+    volumes:
+      - cmangos_mangosd_data:/home/mangos/data
+      - ${WOW_CLIENT_PATH}:/home/mangos/wow-client:ro
+
+    restart: "no"
+
+  db-import:
+    build:
+      context: .
+      target: db-import
+      dockerfile: ./Dockerfile
+  
+    environment:
+      AUTO_CONFIRM: "true"
+      MANGOS_DBHOST: mariadb
+      MYSQL_SUPERUSER: root
+      MYSQL_SUPERPASS: "${MYSQL_ROOT_PASSWORD}"
+
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+    volumes:
+      - cmangos_mangosd_data:/home/mangos/data
+
+    restart: "no
+
   mangosd:
     image: "ghcr.io/byloth/cmangos/${WOW_VERSION}:latest"
     depends_on:
-      - mariadb
+      mariadb:
+        condtion: service_healthy
+      client-data:
+        condition: service_completed_successfully
+      db-import:
+        condition: service_completed_successfully
+
+    build:
+      context: .
+      target: runner
+      dockerfile: ./Dockerfile
 
     environment:
       MANGOS_DBHOST: mariadb
@@ -39,7 +92,17 @@ services:
   realmd:
     image: "ghcr.io/byloth/cmangos/${WOW_VERSION}:latest"
     depends_on:
-      - mariadb
+      mariadb:
+        condtion: service_healthy
+      client-data:
+        condition: service_completed_successfully
+      db-import:
+        condition: service_completed_successfully
+
+    build:
+      context: .
+      target: runner
+      dockerfile: ./Dockerfile
 
     environment:
       MANGOS_DBHOST: mariadb

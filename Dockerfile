@@ -166,6 +166,8 @@ LABEL "net.cmangos.${EXPANSION}-db.revision"="${DATABASE_SHA1}"
 LABEL "net.cmangos.${EXPANSION}-db.source"="https://github.com/cmangos/${EXPANSION}-db"
 LABEL "net.cmangos.${EXPANSION}-db.url"="https://github.com/cmangos/${EXPANSION}-db"
 
+# realmd/cmangosd runtime
+
 FROM ubuntu:24.04 AS runner
 
 ENV DEBIAN_FRONTEND="noninteractive"
@@ -222,6 +224,26 @@ CMD ["bash"]
 
 EXPOSE 3443 3724 7878 8085 8086
 VOLUME ["${VOLUME_DIR}"]
+
+# db-import
+
+FROM builder as db-import
+
+WORKDIR "${DATABASE_DIR}"
+
+CMD ["init-db"]
+
+# client data
+
+FROM builder AS client-data
+
+ENV WOW_CLIENT_DIR="/home/mangos/wow-client"
+
+WORKDIR "${HOME_DIR}/run/bin/tools"
+
+CMD ["extract"]
+
+VOLUME ["${WOW_CLIENT_DIR}"]
 
 ARG COMMIT_SHA
 ARG CREATE_DATE

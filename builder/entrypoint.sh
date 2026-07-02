@@ -38,6 +38,23 @@ function error()
         echo -e "\e[31m${1}\e[0m"
     fi
 }
+function confirm()
+{
+    echo ""
+        echo -e " $(warning "WARNING!" --underline)"
+        echo -e "  $(warning "└") It seems that you've already extracted the resources from the client before."
+        echo -e "    If you continue, existing resources will be overwritten by the new ones."
+        echo ""
+        read -p "Are you sure to continue? [Y/n]: " ANSWER
+
+    if [[ "${AUTO_CONFIRM}" == "true" ]]
+    then
+        return 0
+    fi
+
+    read -p "Are you sure to continue? [Y/n]: " ANSWER
+    [[ "${ANSWER}" == "y" ]] || [[ "${ANSWER}" == "Y" ]]
+}
 
 function mysql_execute()
 {
@@ -74,19 +91,9 @@ function extract_resources_from_client()
 
     if [[ -f ".resext" ]] || [[ $(ls | grep -c -E "Cameras|dbc|maps|mmaps|vmaps") -gt 0 ]]
     then
-        echo ""
-        echo -e " $(warning "WARNING!" --underline)"
-        echo -e "  $(warning "└") It seems that you've already extracted the resources from the client before."
-        echo -e "    If you continue, existing resources will be overwritten by the new ones."
-        echo ""
+        confirm()
         read -p "Are you sure to continue? [Y/n]: " ANSWER
-
         if [[ "${ANSWER}" != "y" ]] && [[ "${ANSWER}" != "Y" ]]
-        then
-            echo -e " └ Ok, no problem! Resources have been left untouched."
-
-            return
-        fi
 
         rm -rf Cameras/ \
                dbc/ \
@@ -127,23 +134,11 @@ function init_db()
 {
     cd "${DATABASE_DIR}"
 
-    echo ""
-    echo "This procedure will create all the databases required by the server"
-    echo " to run properly and will initialize them with the default data."
-    echo ""
-    echo -e " $(warning "WARNING!" --underline)"
-    echo -e "  $(warning "└") Please note that, if you have already initialized the databases before,"
-                 echo -e "     this procedure will prune $(info "ALL") of your data and"
-                 echo -e "     they will be lost $(info "FOREVER") (it's a very long time)!"
-    echo ""
+    confirm()
     read -p "Are you sure to continue? [Y/n]: " ANSWER
-
     if [[ "${ANSWER}" != "y" ]] && [[ "${ANSWER}" != "Y" ]]
-    then
-        echo -e " └ Ok, no problem! Databases have been left untouched."
 
-        return
-    fi
+    read -p "Are you sure to continue? [Y/n]: " ANSWER
 
     echo -e " └ Please, wait... Initializing databases..."
     echo ""
