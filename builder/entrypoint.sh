@@ -40,13 +40,6 @@ function error()
 }
 function confirm()
 {
-    echo ""
-        echo -e " $(warning "WARNING!" --underline)"
-        echo -e "  $(warning "└") It seems that you've already extracted the resources from the client before."
-        echo -e "    If you continue, existing resources will be overwritten by the new ones."
-        echo ""
-        read -p "Are you sure to continue? [Y/n]: " ANSWER
-
     if [[ "${AUTO_CONFIRM}" == "true" ]]
     then
         return 0
@@ -91,9 +84,13 @@ function extract_resources_from_client()
 
     if [[ -f ".resext" ]] || [[ $(ls | grep -c -E "Cameras|dbc|maps|mmaps|vmaps") -gt 0 ]]
     then
-        confirm()
-        read -p "Are you sure to continue? [Y/n]: " ANSWER
-        if [[ "${ANSWER}" != "y" ]] && [[ "${ANSWER}" != "Y" ]]
+        echo ""
+        echo -e " $(warning "WARNING!" --underline)"
+        echo -e "  $(warning "└") It seems that you've already extracted the resources from the client before."
+        echo -e "    If you continue, existing resources will be overwritten by the new ones."
+        echo ""
+
+        confirm || exit 0
 
         rm -rf Cameras/ \
                dbc/ \
@@ -134,11 +131,7 @@ function init_db()
 {
     cd "${DATABASE_DIR}"
 
-    confirm()
-    read -p "Are you sure to continue? [Y/n]: " ANSWER
-    if [[ "${ANSWER}" != "y" ]] && [[ "${ANSWER}" != "Y" ]]
-
-    read -p "Are you sure to continue? [Y/n]: " ANSWER
+    confirm || exit 0
 
     echo -e " └ Please, wait... Initializing databases..."
     echo ""
