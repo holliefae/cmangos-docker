@@ -99,10 +99,16 @@ function extract_resources_from_client()
                vmaps/
     fi
 
+    local WORK_DIR="${VOLUME_DIR}/.extract"
+
+    rm -rf "${WORK_DIR}"
+    mkdir -p "${WORK_DIR}"
+    ln -sfn "${HOME_DIR}/wow-client/Data" "${WORK_DIR}/Data"
+
     cd "${HOME_DIR}/run/bin/tools"
 
-    cp * "${HOME_DIR}/wow-client/"
-    cd "${HOME_DIR}/wow-client"
+    cp * "${WORK_DIR}/"
+    cd "${WORK_DIR}"
 
     ./ExtractResources.sh ${@}
 
@@ -115,15 +121,8 @@ function extract_resources_from_client()
     mkdir -p "${VOLUME_DIR}/logs"
     mv *.log "${VOLUME_DIR}/logs/"
 
-    rm -rf Buildings/ \
-       \
-       ExtractResources.sh \
-       MoveMapGen \
-       MoveMapGen.sh \
-       ad \
-       offmesh.txt \
-       vmap_assembler \
-       vmap_extractor
+    cd "${VOLUME_DIR}"
+    rm -rf "${WORK_DIR}"
 
     echo "${SCRIPT_VERSION}" > "${VOLUME_DIR}/.resext"
 }
