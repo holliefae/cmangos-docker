@@ -92,37 +92,22 @@ function extract_resources_from_client()
 
         confirm || exit 0
 
-        rm -rf Cameras/ \
+        rm -rf Buildings/ \
+               Cameras/ \
                dbc/ \
                maps/ \
                mmaps/ \
                vmaps/
     fi
 
-    local WORK_DIR="${VOLUME_DIR}/.extract"
-
-    rm -rf "${WORK_DIR}"
-    mkdir -p "${WORK_DIR}"
-    ln -sfn "${HOME_DIR}/wow-client/Data" "${WORK_DIR}/Data"
-
     cd "${HOME_DIR}/run/bin/tools"
 
-    cp * "${WORK_DIR}/"
-    cd "${WORK_DIR}"
+    ./ExtractResources.sh a "${HOME_DIR}/wow-client" "${VOLUME_DIR}"
 
-    ./ExtractResources.sh ${@}
-
-    mv Cameras "${VOLUME_DIR}/Cameras"
-    mv dbc "${VOLUME_DIR}/dbc"
-    mv maps "${VOLUME_DIR}/maps"
-    mv mmaps "${VOLUME_DIR}/mmaps"
-    mv vmaps "${VOLUME_DIR}/vmaps"
+    rm -rf "${VOLUME_DIR}/Buildings"
 
     mkdir -p "${VOLUME_DIR}/logs"
-    mv *.log "${VOLUME_DIR}/logs/"
-
-    cd "${VOLUME_DIR}"
-    rm -rf "${WORK_DIR}"
+    mv "${VOLUME_DIR}"/*.log "${VOLUME_DIR}/logs/"
 
     echo "${SCRIPT_VERSION}" > "${VOLUME_DIR}/.resext"
 }
